@@ -1,28 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"intro/handlers"
 	"log"
-	"io/ioutil"
+	"net/http"
+	"os"
 )
 
 func main() {
-	http.HandleFunc("/", func(rw http.ResponseWriter, r*http.Request){
-		log.Println("Hello World")
-		d, err := ioutil.ReadAll(r.Body)
+	log := log.New(os.Stdout, "product-api", log.LstdFlags)
 
-		if err != nil {
-			http.Error(rw, "Oops", http.StatusBadRequest)
-			return
-		}
+	helloHandlers := handlers.NewHello(log)
+	goodbyeHandlers := handlers.NewGoodbye(log)
 
-		fmt.Fprintf(rw, "Hello %s", d)
-	})
+	serverMux := http.NewServeMux()
+	serverMux.Handle("/", helloHandlers)
+	serverMux.Handle("/goodbye", goodbyeHandlers)
 
-	http.HandleFunc("/goodbye", func(http.ResponseWriter, *http.Request) {
-		log.Println("Goodbye World")
-	})
-
-	http.ListenAndServe(":9000", nil)
+	http.ListenAndServe(":9000", serverMux)
 }
